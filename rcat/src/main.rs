@@ -1,4 +1,4 @@
-use std::process;
+use std::{fmt::Result, process};
 
 use clap::{
     Parser,
@@ -34,8 +34,21 @@ enum Commands {
     }
 }
 
-fn main() {
-    let cli = Cli::parse();
+async fn run() -> Result<> {
+    let mut stdin = tokio::io::stdin();
+    let mut stdout = tokio::io::stdout();
+
+    tokio::spawn(async move {
+        tokio::io::copy(&mut stdin, &mut stdout).await.unwrap();
+    }).await.unwrap();
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() {
+    run().await.unwrap();
+    /* let cli = Cli::parse();
 
     match &cli.command {
         Commands::Connect { host, port } => {
@@ -66,5 +79,5 @@ fn main() {
                 }
             }
         }
-    }
+    } */
 }
