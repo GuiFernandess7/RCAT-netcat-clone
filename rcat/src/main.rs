@@ -4,6 +4,7 @@ use clap::{
 };
 
 mod connect;
+mod serve;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -21,6 +22,14 @@ enum Commands {
         #[arg(short, long)]
         port: u16,
     },
+
+    Serve {
+        #[arg(default_value = "127.0.0.1")]
+        bind_host: String,
+
+        #[arg(short, long, value_parser)]
+        port: u16,
+    }
 }
 
 fn main() {
@@ -29,6 +38,9 @@ fn main() {
     match &cli.command {
         Commands::Connect { host, port } => {
             println!("connected to {}:{}", host, port);
+        },
+        Commands::Serve { bind_host, port } => {
+            println!("serve to {} and {}", bind_host, port);
         }
     }
 }
