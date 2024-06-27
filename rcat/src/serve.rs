@@ -9,8 +9,17 @@ pub fn run(bind_host: &String, port: &u16) -> Result<(), String> {
 
     for stream in listener.incoming() {
         match stream {
-            Ok(s) => {
+            Ok(mut s) => {
                 println!("Connection accepted");
+                let mut buf = [0; 120];
+                let mut read_bytes = 0;
+                while read_bytes == 0 {
+                    read_bytes = s.read(&mut buf).map_err(|_| "Failed to read from socket")?;
+                    println!("received bytes {}", read_bytes);
+                }
+
+                stdout().write(&buf[0..read_bytes]).map_err(|_| "Failed to write to stdout")?;
+                stdout().flush().unwrap();
             }
             Err(e) => {
                 println!("Error while accepting incoming connection - {}", e);

@@ -1,3 +1,5 @@
+use std::process;
+
 use clap::{
     Parser,
     Subcommand
@@ -38,9 +40,31 @@ fn main() {
     match &cli.command {
         Commands::Connect { host, port } => {
             println!("connected to {}:{}", host, port);
+
+            let run_result = connect::run(host, port);
+            match run_result {
+                Ok(()) => {
+                    process::exit(0);
+                }
+                Err(e) => {
+                    println!("failed - {}", e);
+                    process::exit(0);
+                }
+            }
         },
         Commands::Serve { bind_host, port } => {
             println!("serve to {} and {}", bind_host, port);
+
+            let run_result = serve::run(bind_host, port);
+            match run_result {
+                Ok(()) => {
+                    process::exit(0);
+                }
+                Err(e) => {
+                    println!("failed - {}", e);
+                    process::exit(1);
+                }
+            }
         }
     }
 }
