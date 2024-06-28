@@ -4,9 +4,11 @@ use clap::{
     Parser,
     Subcommand
 };
+use std::time::Duration;
 
 mod connect;
 mod serve;
+mod stream;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -47,14 +49,17 @@ async fn run() -> Result<> {
 
 #[tokio::main]
 async fn main() {
-    run().await.unwrap();
-    /* let cli = Cli::parse();
+    let cli = Cli::parse();
+
+    let runtime = tokio::runtime::Runtime::new().unwrap();
 
     match &cli.command {
         Commands::Connect { host, port } => {
             println!("connected to {}:{}", host, port);
 
-            let run_result = connect::run(host, port);
+
+            // Sync
+            /* let run_result = connect::run(host, port);
             match run_result {
                 Ok(()) => {
                     process::exit(0);
@@ -64,11 +69,21 @@ async fn main() {
                     process::exit(0);
                 }
             }
+            */
+
+            // Async
+            runtime.block_on(async {
+                tokio::select! {
+                    _ = stream::client() => {}
+                    _ = tokio::signal::ctrl_c() => {}
+                }
+            });
+
         },
         Commands::Serve { bind_host, port } => {
             println!("serve to {} and {}", bind_host, port);
 
-            let run_result = serve::run(bind_host, port);
+            /* let run_result = serve::run(bind_host, port);
             match run_result {
                 Ok(()) => {
                     process::exit(0);
@@ -77,7 +92,17 @@ async fn main() {
                     println!("failed - {}", e);
                     process::exit(1);
                 }
-            }
+            } */
+
+
+            runtime.block_on(async {
+                tokio::select! {
+                    _ = stream::server() => {}
+                    _ = tokio::signal::ctrl_c() => {}
+                }
+            });
         }
-    } */
+    }
+
+    runtime.shutdown_timeout(Duration::from_secs(0));
 }
